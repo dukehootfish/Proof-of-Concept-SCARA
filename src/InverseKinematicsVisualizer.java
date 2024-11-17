@@ -59,30 +59,43 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        angle1 += 0.01; // Increment angle1 in a constant way
+        time += 0.03;
+        angle1 += 0.01;
+
+        // Update target positions for circle and square
         if (drawCircle) {
-        // Update target position (circle)
-        targetX = radius * Math.cos(time);
-        targetY = radius * Math.sin(time);
+            targetX = radius * Math.cos(time);
+            targetY = radius * Math.sin(time);
         } else {
-        // Update target position (square)
-        double t = time % (4 * Math.PI);
-        if (t < Math.PI) {
-            targetX = radius * Math.cos(t);
-            targetY = radius;
-        } else if (t < 2 * Math.PI) {
-            targetX = -radius;
-            targetY = radius * Math.cos(t - Math.PI);
-        } else if (t < 3 * Math.PI) {
-            targetX = -radius * Math.cos(t - 2 * Math.PI);
-            targetY = -radius;
-        } else {    
-            targetX = radius;
-            targetY = radius * -Math.cos(t - 3 * Math.PI);
-    }
-}
+            double t = time % (4 * radius);
+            if (t < radius) {
+                targetX = t - radius / 2;
+                targetY = radius / 2;
+            } else if (t < 2 * radius) {
+                targetX = radius / 2;
+                targetY = radius / 2 - (t - radius);
+            } else if (t < 3 * radius) {
+                targetX = radius / 2 - (t - 2 * radius);
+                targetY = -radius / 2;
+            } else {
+                targetX = -radius / 2;
+                targetY = (t - 3 * radius) - radius / 2;
+            }
+        }
+
+        // Inverse kinematics calculations
+        double dx = targetX;
+        double dy = targetY;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+        double cosAngle2 = (distance * distance - ARM_LENGTH1 * ARM_LENGTH1 - ARM_LENGTH2 * ARM_LENGTH2) / (2 * ARM_LENGTH1 * ARM_LENGTH2);
+        angle2 = Math.acos(cosAngle2);
+        double sinAngle2 = Math.sqrt(1 - cosAngle2 * cosAngle2);
+        double sinAngle1 = (dy * (ARM_LENGTH1 + ARM_LENGTH2 * cosAngle2) - dx * ARM_LENGTH2 * sinAngle2) / (distance * distance);
+        double cosAngle1 = (dx * (ARM_LENGTH1 + ARM_LENGTH2 * cosAngle2) + dy * ARM_LENGTH2 * sinAngle2) / (distance * distance);
+        angle1 = Math.atan2(sinAngle1, cosAngle1);
+
         repaint();
-        
+
     }
 
     @Override
