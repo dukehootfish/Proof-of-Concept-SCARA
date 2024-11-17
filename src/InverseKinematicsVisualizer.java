@@ -60,7 +60,29 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
     @Override
     public void actionPerformed(ActionEvent e) {
         angle1 += 0.01; // Increment angle1 in a constant way
+        if (drawCircle) {
+        // Update target position (circle)
+        targetX = radius * Math.cos(time);
+        targetY = radius * Math.sin(time);
+        } else {
+        // Update target position (square)
+        double t = time % (4 * Math.PI);
+        if (t < Math.PI) {
+            targetX = radius * Math.cos(t);
+            targetY = radius;
+        } else if (t < 2 * Math.PI) {
+            targetX = -radius;
+            targetY = radius * Math.cos(t - Math.PI);
+        } else if (t < 3 * Math.PI) {
+            targetX = -radius * Math.cos(t - 2 * Math.PI);
+            targetY = -radius;
+        } else {    
+            targetX = radius;
+            targetY = radius * -Math.cos(t - 3 * Math.PI);
+    }
+}
         repaint();
+        
     }
 
     @Override
