@@ -54,6 +54,13 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
 
     private void switchShape() {
         drawCircle = !drawCircle;
+        angle1 = 0; // Reset angle1 to 0 when shape changes
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        angle1 += 0.01; // Increment angle1 in a constant way
+        repaint();
     }
 
     @Override
@@ -78,45 +85,7 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
 
         // Draw target
         g2d.setColor(Color.RED);
-        g2d.fillOval(getWidth() / 2 + (int) targetX - 5, getHeight() / 2 + (int) targetY - 5, 10, 10);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        time += 0.03;
-
-        if (drawCircle) {
-            // Update target position (circle)
-            targetX = radius * Math.cos(time);
-            targetY = radius * Math.sin(time);
-        } else {
-            // Update target position (square)
-            double t = time % (4 * Math.PI);
-            if (t < Math.PI) {
-                targetX = radius * Math.cos(t);
-                targetY = radius;
-            } else if (t < 2 * Math.PI) {
-                targetX = -radius;
-                targetY = radius * Math.cos(t - Math.PI);
-            } else if (t < 3 * Math.PI) {
-                targetX = -radius * Math.cos(t - 2 * Math.PI);
-                targetY = -radius;
-            } else {
-                targetX = radius;
-                targetY = radius * -Math.cos(t - 3 * Math.PI);
-
-            }
-        }
-
-        // Inverse kinematics calculations
-        double dx = targetX;
-        double dy = targetY;
-        double distance = Math.sqrt(dx * dx + dy * dy);
-
-        angle2 = Math.acos((distance * distance - ARM_LENGTH1 * ARM_LENGTH1 - ARM_LENGTH2 * ARM_LENGTH2) / (2 * ARM_LENGTH1 * ARM_LENGTH2));
-        angle1 = Math.atan2(dy, dx) - Math.atan2(ARM_LENGTH2 * Math.sin(angle2), ARM_LENGTH1 + ARM_LENGTH2 * Math.cos(angle2));
-
-        repaint();
+        // Additional drawing logic...
     }
 
     public static void main(String[] args) {
