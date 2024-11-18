@@ -5,10 +5,12 @@ import java.awt.event.ActionListener;
 
 public class InverseKinematicsVisualizer extends JPanel implements ActionListener {
     private static final int TIMER_DELAY = 30;
-    private static final double ARM_LENGTH1 = 100;
-    private static final double ARM_LENGTH2 = 100;
+    private static final double ARM_LENGTH1 = 300;
+    private static final double ARM_LENGTH2 = 200;
+    private static double ARM_LENGTH3 = 0;
     private double angle1 = 0;
     private double angle2 = 0;
+    private double inBetween = 0;
     private double targetX = 0;
     private double targetY = 0;
     private double time = 0;
@@ -54,6 +56,7 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
 
     private void switchShape() {
         drawCircle = !drawCircle;
+        angle1 = 0;
     }
 
     @Override
@@ -67,14 +70,25 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
         double y1 = ARM_LENGTH1 * Math.sin(angle1);
         double x2 = x1 + ARM_LENGTH2 * Math.cos(angle1 + angle2);
         double y2 = y1 + ARM_LENGTH2 * Math.sin(angle1 + angle2);
+        // Draw length
+        g2d.drawString(""+ARM_LENGTH3,(getWidth() / 2)-80, (getHeight() / 2)-80);
 
         // Draw arms
         g2d.drawLine(getWidth() / 2, getHeight() / 2, getWidth() / 2 + (int) x1, getHeight() / 2 + (int) y1);
         g2d.drawLine(getWidth() / 2 + (int) x1, getHeight() / 2 + (int) y1, getWidth() / 2 + (int) x2, getHeight() / 2 + (int) y2);
+        g2d.drawLine(getWidth() / 2, getHeight() / 2, getWidth() / 2 + (int) targetX, getHeight() / 2 + (int) targetY);
 
         // Draw joints
         g2d.fillOval(getWidth() / 2 + (int) x1 - 5, getHeight() / 2 + (int) y1 - 5, 10, 10);
         g2d.fillOval(getWidth() / 2 + (int) x2 - 5, getHeight() / 2 + (int) y2 - 5, 10, 10);
+
+        // Draw shapes
+        if (drawCircle) {
+            g2d.drawArc(getWidth()/2-(int)radius,getHeight()/2-(int)radius,(int)radius*2,(int)radius*2,0,360);
+        }
+        else{
+            g2d.drawRect(getWidth()/2-(int)radius,getHeight()/2-(int)radius,(int)radius*2,(int)radius*2);
+        }
 
         // Draw target
         g2d.setColor(Color.RED);
@@ -83,9 +97,30 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        time += 0.03;
+        angle1 += 0.03;
+        System.out.println("Before: " +angle1);
+        angle1 = angle1 % (Math.PI*2);
+        System.out.println("After: " +angle1);
+        if(drawCircle) {
+            ARM_LENGTH3=radius;
+        }
+        else if((Math.PI*(1.75)) < angle1+inBetween || angle1+inBetween < Math.PI/4 ) {
+            targetX = radius;
 
-        if (drawCircle) {
+            targetY = radius*Math.sin(angle1+inBetween);
+
+
+            ARM_LENGTH3=Math.sqrt(targetX*targetX+targetY*targetY);
+            System.out.println("Test: " +ARM_LENGTH3);
+
+        }
+        inBetween = Math.acos((ARM_LENGTH3*ARM_LENGTH3+ARM_LENGTH1*ARM_LENGTH1-ARM_LENGTH2*ARM_LENGTH2)/(2*ARM_LENGTH3*ARM_LENGTH1));
+        //targetX = ARM_LENGTH3*Math.cos(inBetween+angle1);
+        //targetY = ARM_LENGTH3*Math.sin(inBetween+angle1);
+        angle2 =Math.PI-Math.acos((ARM_LENGTH2*ARM_LENGTH2+ARM_LENGTH1*ARM_LENGTH1-ARM_LENGTH3*ARM_LENGTH3)/(2*ARM_LENGTH2*ARM_LENGTH1));
+
+
+        /*if (drawCircle) {
             // Update target position (circle)
             targetX = radius * Math.cos(time);
             targetY = radius * Math.sin(time);
@@ -114,7 +149,7 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         angle2 = Math.acos((distance * distance - ARM_LENGTH1 * ARM_LENGTH1 - ARM_LENGTH2 * ARM_LENGTH2) / (2 * ARM_LENGTH1 * ARM_LENGTH2));
-        angle1 = Math.atan2(dy, dx) - Math.atan2(ARM_LENGTH2 * Math.sin(angle2), ARM_LENGTH1 + ARM_LENGTH2 * Math.cos(angle2));
+        angle1 = Math.atan2(dy, dx) - Math.atan2(ARM_LENGTH2 * Math.sin(angle2), ARM_LENGTH1 + ARM_LENGTH2 * Math.cos(angle2));*/
 
         repaint();
     }
