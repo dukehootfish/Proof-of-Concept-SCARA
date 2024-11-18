@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
 
 public class InverseKinematicsVisualizer extends JPanel implements ActionListener {
     private static final int TIMER_DELAY = 30;
@@ -16,6 +17,7 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
     private double time = 0;
     private double radius = 150; // Default radius of the circle
     private boolean drawCircle = true; // Default to drawing a circle
+    private Random random = new Random();
 
     private JTextField radiusField;
 
@@ -70,13 +72,13 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
         double y1 = ARM_LENGTH1 * Math.sin(angle1);
         double x2 = x1 + ARM_LENGTH2 * Math.cos(angle1 + angle2);
         double y2 = y1 + ARM_LENGTH2 * Math.sin(angle1 + angle2);
-        // Draw length
-        g2d.drawString(""+ARM_LENGTH3,(getWidth() / 2)-80, (getHeight() / 2)-80);
 
+        //g2d.drawString("alpha: "+Math.toDegrees(inBetween),(getWidth() / 2)-(int)radius, getHeight() / 2-(int)radius-10);
+        //g2d.drawString("beta: "+Math.toDegrees(angle2),(getWidth() / 2)-(int)radius, getHeight() / 2-(int)radius);
         // Draw arms
         g2d.drawLine(getWidth() / 2, getHeight() / 2, getWidth() / 2 + (int) x1, getHeight() / 2 + (int) y1);
         g2d.drawLine(getWidth() / 2 + (int) x1, getHeight() / 2 + (int) y1, getWidth() / 2 + (int) x2, getHeight() / 2 + (int) y2);
-        g2d.drawLine(getWidth() / 2, getHeight() / 2, getWidth() / 2 + (int) targetX, getHeight() / 2 + (int) targetY);
+        //g2d.drawLine(getWidth() / 2, getHeight() / 2, getWidth() / 2 + (int) targetX, getHeight() / 2 + (int) targetY);
 
         // Draw joints
         g2d.fillOval(getWidth() / 2 + (int) x1 - 5, getHeight() / 2 + (int) y1 - 5, 10, 10);
@@ -98,21 +100,69 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
     @Override
     public void actionPerformed(ActionEvent e) {
         angle1 += 0.03;
-        System.out.println("Before: " +angle1);
+        //if(angle1 >= Math.PI*2){
+       //    radius = random.nextInt((int)ARM_LENGTH2*2 + 1) + (ARM_LENGTH1-ARM_LENGTH2);
+        //}
         angle1 = angle1 % (Math.PI*2);
-        System.out.println("After: " +angle1);
         if(drawCircle) {
             ARM_LENGTH3=radius;
+
         }
-        else if((Math.PI*(1.75)) < angle1+inBetween || angle1+inBetween < Math.PI/4 ) {
-            targetX = radius;
+        else {
+            if((Math.PI*(1.75)) < angle1+inBetween || angle1+inBetween <= Math.PI/4 ) {
+                targetX = radius;
 
-            targetY = radius*Math.sin(angle1+inBetween);
+                double x1 = ARM_LENGTH1 * Math.cos(angle1);
+                double x2 = targetX-x1;
+                double y1 = Math.sqrt((ARM_LENGTH2*ARM_LENGTH2)-(x2*x2));
+                double y2 = ARM_LENGTH1 * Math.sin(angle1);
+                targetY = y2+y1;
 
 
-            ARM_LENGTH3=Math.sqrt(targetX*targetX+targetY*targetY);
-            System.out.println("Test: " +ARM_LENGTH3);
 
+                ARM_LENGTH3=Math.sqrt(targetX*targetX+targetY*targetY);
+
+            }
+            else if((angle1+inBetween <= Math.PI*(0.75))) {
+                targetY = radius;
+
+                double y1 = ARM_LENGTH1 * Math.sin(angle1);
+                double y2 = targetY-y1;
+                double x1 = Math.sqrt((ARM_LENGTH2*ARM_LENGTH2)-(y2*y2));
+                double x2 = ARM_LENGTH1 * Math.cos(angle1);
+                targetX =  x2-x1;
+
+
+
+                ARM_LENGTH3=Math.sqrt(targetX*targetX+targetY*targetY);
+            }
+            else if((angle1+inBetween <= Math.PI*(1.25))){
+
+                targetX = -radius;
+
+                double x1 = ARM_LENGTH1 * Math.cos(angle1);
+                double x2 = targetX-x1;
+                double y1 = Math.sqrt((ARM_LENGTH2*ARM_LENGTH2)-(x2*x2));
+                double y2 = ARM_LENGTH1 * Math.sin(angle1);
+                targetY = y2-y1;
+
+
+
+                ARM_LENGTH3=Math.sqrt(targetX*targetX+targetY*targetY);
+            }
+            else {
+                targetY = -radius;
+
+                double y1 = ARM_LENGTH1 * Math.sin(angle1);
+                double y2 = targetY-y1;
+                double x1 = Math.sqrt((ARM_LENGTH2*ARM_LENGTH2)-(y2*y2));
+                double x2 = ARM_LENGTH1 * Math.cos(angle1);
+                targetX =  x2+x1;
+
+
+
+                ARM_LENGTH3=Math.sqrt(targetX*targetX+targetY*targetY);
+            }
         }
         inBetween = Math.acos((ARM_LENGTH3*ARM_LENGTH3+ARM_LENGTH1*ARM_LENGTH1-ARM_LENGTH2*ARM_LENGTH2)/(2*ARM_LENGTH3*ARM_LENGTH1));
         //targetX = ARM_LENGTH3*Math.cos(inBetween+angle1);
@@ -149,8 +199,8 @@ public class InverseKinematicsVisualizer extends JPanel implements ActionListene
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         angle2 = Math.acos((distance * distance - ARM_LENGTH1 * ARM_LENGTH1 - ARM_LENGTH2 * ARM_LENGTH2) / (2 * ARM_LENGTH1 * ARM_LENGTH2));
-        angle1 = Math.atan2(dy, dx) - Math.atan2(ARM_LENGTH2 * Math.sin(angle2), ARM_LENGTH1 + ARM_LENGTH2 * Math.cos(angle2));*/
-
+        angle1 = Math.atan2(dy, dx) - Math.atan2(ARM_LENGTH2 * Math.sin(angle2), ARM_LENGTH1 + ARM_LENGTH2 * Math.cos(angle2));
+*/
         repaint();
     }
 
